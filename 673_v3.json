@@ -1,0 +1,561 @@
+{
+  "segments": [
+    {
+      "end": 4.44,
+      "fillerwords": [],
+      "pauses": [],
+      "repetitions": [],
+      "speaker": "SPEAKER_00",
+      "start": 3.48,
+      "text": "Hey tell me this storysssss.",
+      "words": [
+        {
+          "end": 3.48,
+          "start": 3.48,
+          "word": "Hey"
+        },
+        {
+          "end": 3.7,
+          "start": 3.48,
+          "word": "tell"
+        },
+        {
+          "end": 3.84,
+          "start": 3.7,
+          "word": "me"
+        },
+        {
+          "end": 4.04,
+          "start": 3.84,
+          "word": "this"
+        },
+        {
+          "end": 4.42,
+          "start": 4.04,
+          "word": "story."
+        }
+      ]
+    },
+    {
+      "end": 21.53,
+      "fillerwords": [
+        {
+          "content": "[UM]",
+          "duration": 0.24,
+          "end": 5.5,
+          "start": 5.26
+        },
+        {
+          "content": "[UM]",
+          "duration": 0.6,
+          "end": 11.12,
+          "start": 10.52
+        }
+      ],
+      "pauses": [],
+      "repetitions": [],
+      "speaker": "SPEAKER_00",
+      "start": 5.26,
+      "text": "[UM] a rabbit. Some help with the [UM] with the dog. And you want some help too with me? You know how to make a sand castle?",
+      "words": [
+        {
+          "end": 5.5,
+          "start": 5.26,
+          "word": "[UM]"
+        },
+        {
+          "end": 7.08,
+          "start": 5.5,
+          "word": "a"
+        },
+        {
+          "end": 7.84,
+          "start": 7.08,
+          "word": "rabbit."
+        },
+        {
+          "end": 9.16,
+          "start": 7.84,
+          "word": "Some"
+        },
+        {
+          "end": 9.62,
+          "start": 9.16,
+          "word": "help"
+        },
+        {
+          "end": 10.06,
+          "start": 9.62,
+          "word": "with"
+        },
+        {
+          "end": 10.52,
+          "start": 10.06,
+          "word": "the"
+        },
+        {
+          "end": 11.12,
+          "start": 10.52,
+          "word": "[UM]"
+        },
+        {
+          "end": 12.16,
+          "start": 11.12,
+          "word": "with"
+        },
+        {
+          "end": 13.1,
+          "start": 12.16,
+          "word": "the"
+        },
+        {
+          "end": 14.26,
+          "start": 13.1,
+          "word": "dog."
+        },
+        {
+          "end": 15.56,
+          "start": 14.26,
+          "word": "And"
+        },
+        {
+          "end": 16.5,
+          "start": 15.56,
+          "word": "you"
+        },
+        {
+          "end": 16.78,
+          "start": 16.5,
+          "word": "want"
+        },
+        {
+          "end": 17.08,
+          "start": 16.78,
+          "word": "some"
+        },
+        {
+          "end": 17.52,
+          "start": 17.08,
+          "word": "help"
+        },
+        {
+          "end": 18.12,
+          "start": 17.52,
+          "word": "too"
+        },
+        {
+          "end": 18.54,
+          "start": 18.12,
+          "word": "with"
+        },
+        {
+          "end": 18.86,
+          "start": 18.54,
+          "word": "me?"
+        },
+        {
+          "end": 19.22,
+          "start": 18.86,
+          "word": "You"
+        },
+        {
+          "end": 19.44,
+          "start": 19.22,
+          "word": "know"
+        },
+        {
+          "end": 19.64,
+          "start": 19.44,
+          "word": "how"
+        },
+        {
+          "end": 19.86,
+          "start": 19.64,
+          "word": "to"
+        },
+        {
+          "end": 20.24,
+          "start": 19.86,
+          "word": "make"
+        },
+        {
+          "end": 20.44,
+          "start": 20.24,
+          "word": "a"
+        },
+        {
+          "end": 20.9,
+          "start": 20.44,
+          "word": "sand"
+        },
+        {
+          "end": 21.5,
+          "start": 20.9,
+          "word": "castle?"
+        }
+      ]
+    },
+    {
+      "end": 22.21,
+      "fillerwords": [],
+      "pauses": [],
+      "repetitions": [],
+      "speaker": "SPEAKER_00",
+      "start": 21.55,
+      "text": "Okay.",
+      "words": [
+        {
+          "end": 22.09,
+          "start": 21.55,
+          "word": "Okay."
+        }
+      ]
+    },
+    {
+      "end": 29.21,
+      "fillerwords": [
+        {
+          "content": "[UM]",
+          "duration": 0.52,
+          "end": 26.29,
+          "start": 25.77
+        },
+        {
+          "content": "[UH]",
+          "duration": 0.4,
+          "end": 27.99,
+          "start": 27.59
+        }
+      ],
+      "pauses": [],
+      "repetitions": [],
+      "speaker": "SPEAKER_00",
+      "start": 25.21,
+      "text": "And he [UM] the rabbit make [UH] sand castle.",
+      "words": [
+        {
+          "end": 25.33,
+          "start": 25.21,
+          "word": "And"
+        },
+        {
+          "end": 25.77,
+          "start": 25.33,
+          "word": "he"
+        },
+        {
+          "end": 26.29,
+          "start": 25.77,
+          "word": "[UM]"
+        },
+        {
+          "end": 26.53,
+          "start": 26.29,
+          "word": "the"
+        },
+        {
+          "end": 27.07,
+          "start": 26.53,
+          "word": "rabbit"
+        },
+        {
+          "end": 27.59,
+          "start": 27.07,
+          "word": "make"
+        },
+        {
+          "end": 27.99,
+          "start": 27.59,
+          "word": "[UH]"
+        },
+        {
+          "end": 28.59,
+          "start": 27.99,
+          "word": "sand"
+        },
+        {
+          "end": 29.19,
+          "start": 28.59,
+          "word": "castle."
+        }
+      ]
+    },
+    {
+      "end": 41.3,
+      "fillerwords": [],
+      "pauses": [],
+      "repetitions": [
+        {
+          "content": "the",
+          "mark_location": 7,
+          "words": [
+            7
+          ]
+        }
+      ],
+      "speaker": "SPEAKER_00",
+      "start": 34.51,
+      "text": "The rabbit dumped all the sand to the the sand castle.",
+      "words": [
+        {
+          "end": 34.59,
+          "start": 34.51,
+          "word": "The"
+        },
+        {
+          "end": 35.19,
+          "start": 34.59,
+          "word": "rabbit"
+        },
+        {
+          "end": 35.67,
+          "start": 35.19,
+          "word": "dumped"
+        },
+        {
+          "end": 36.17,
+          "start": 35.67,
+          "word": "all"
+        },
+        {
+          "end": 36.43,
+          "start": 36.17,
+          "word": "the"
+        },
+        {
+          "end": 37.09,
+          "start": 36.43,
+          "word": "sand"
+        },
+        {
+          "end": 37.65,
+          "start": 37.09,
+          "word": "to"
+        },
+        {
+          "end": 38.25,
+          "start": 37.65,
+          "word": "the"
+        },
+        {
+          "end": 40.25,
+          "start": 38.25,
+          "word": "the"
+        },
+        {
+          "end": 40.63,
+          "start": 40.25,
+          "word": "sand"
+        },
+        {
+          "end": 41.27,
+          "start": 40.63,
+          "word": "castle."
+        }
+      ]
+    },
+    {
+      "end": 55.8,
+      "fillerwords": [
+        {
+          "content": "[UH]",
+          "duration": 0.72,
+          "end": 47.04,
+          "start": 46.32
+        },
+        {
+          "content": "[UM]",
+          "duration": 0.86,
+          "end": 48.92,
+          "start": 48.06
+        }
+      ],
+      "pauses": [],
+      "repetitions": [],
+      "speaker": "SPEAKER_00",
+      "start": 43.56,
+      "text": "And he's that [UH] densely [UM] wrote the dogs, the dog sand castle.",
+      "words": [
+        {
+          "end": 43.84,
+          "start": 43.56,
+          "word": "And"
+        },
+        {
+          "end": 45.36,
+          "start": 43.84,
+          "word": "he's"
+        },
+        {
+          "end": 46.32,
+          "start": 45.36,
+          "word": "that"
+        },
+        {
+          "end": 47.04,
+          "start": 46.32,
+          "word": "[UH]"
+        },
+        {
+          "end": 48.06,
+          "start": 47.04,
+          "word": "densely"
+        },
+        {
+          "end": 48.92,
+          "start": 48.06,
+          "word": "[UM]"
+        },
+        {
+          "end": 49.96,
+          "start": 48.92,
+          "word": "wrote"
+        },
+        {
+          "end": 51.42,
+          "start": 49.96,
+          "word": "the"
+        },
+        {
+          "end": 52.08,
+          "start": 51.42,
+          "word": "dogs,"
+        },
+        {
+          "end": 52.94,
+          "start": 52.08,
+          "word": "the"
+        },
+        {
+          "end": 53.48,
+          "start": 52.94,
+          "word": "dog"
+        },
+        {
+          "end": 55.24,
+          "start": 53.48,
+          "word": "sand"
+        },
+        {
+          "end": 55.78,
+          "start": 55.24,
+          "word": "castle."
+        }
+      ]
+    },
+    {
+      "end": 71.97,
+      "fillerwords": [
+        {
+          "content": "[UM]",
+          "duration": 0.5,
+          "end": 63.04,
+          "start": 62.54
+        },
+        {
+          "content": "[UM]",
+          "duration": 1.42,
+          "end": 70.4,
+          "start": 68.98
+        }
+      ],
+      "pauses": [],
+      "repetitions": [],
+      "speaker": "SPEAKER_00",
+      "start": 61.12,
+      "text": "The dog never [UM] make a sound cancel and he cried and the bunny rabbit [UM] be sorry.",
+      "words": [
+        {
+          "end": 61.2,
+          "start": 61.12,
+          "word": "The"
+        },
+        {
+          "end": 61.72,
+          "start": 61.2,
+          "word": "dog"
+        },
+        {
+          "end": 62.54,
+          "start": 61.72,
+          "word": "never"
+        },
+        {
+          "end": 63.04,
+          "start": 62.54,
+          "word": "[UM]"
+        },
+        {
+          "end": 63.9,
+          "start": 63.04,
+          "word": "make"
+        },
+        {
+          "end": 64.06,
+          "start": 63.9,
+          "word": "a"
+        },
+        {
+          "end": 64.4,
+          "start": 64.06,
+          "word": "sound"
+        },
+        {
+          "end": 64.92,
+          "start": 64.4,
+          "word": "cancel"
+        },
+        {
+          "end": 65.52,
+          "start": 64.92,
+          "word": "and"
+        },
+        {
+          "end": 65.78,
+          "start": 65.52,
+          "word": "he"
+        },
+        {
+          "end": 66.48,
+          "start": 65.78,
+          "word": "cried"
+        },
+        {
+          "end": 67.28,
+          "start": 66.48,
+          "word": "and"
+        },
+        {
+          "end": 67.78,
+          "start": 67.28,
+          "word": "the"
+        },
+        {
+          "end": 68.34,
+          "start": 67.78,
+          "word": "bunny"
+        },
+        {
+          "end": 68.98,
+          "start": 68.34,
+          "word": "rabbit"
+        },
+        {
+          "end": 70.4,
+          "start": 68.98,
+          "word": "[UM]"
+        },
+        {
+          "end": 71.42,
+          "start": 70.4,
+          "word": "be"
+        },
+        {
+          "end": 71.94,
+          "start": 71.42,
+          "word": "sorry."
+        }
+      ]
+    }
+  ]
+}
