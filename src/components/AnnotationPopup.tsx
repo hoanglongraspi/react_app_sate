@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Clock, Play } from 'lucide-react';
+import { X } from 'lucide-react';
 
 export interface AnnotationDetails {
   type: string;
@@ -28,7 +28,7 @@ interface AnnotationPopupProps {
 const AnnotationPopup: React.FC<AnnotationPopupProps> = ({ 
   annotation, 
   onClose, 
-  onSeek 
+  // onSeek // Currently unused but kept for future functionality
 }) => {
   if (!annotation) return null;
 
@@ -66,24 +66,26 @@ const AnnotationPopup: React.FC<AnnotationPopupProps> = ({
     return colors[type] || '#6B7280';
   };
 
-  const getAnnotationDescription = (type: string) => {
-    const descriptions: Record<string, string> = {
-      'filler': 'A filler word or sound that doesn\'t add meaning to the speech',
-      'repetition': 'Repeated words or phrases in the speech',
-      'mispronunciation': 'A word that was pronounced incorrectly',
-      'morpheme': 'A morphological variation or inflection',
-      'morpheme-omission': 'Missing morphological ending or component',
-      'revision': 'Self-correction or revision in speech',
-      'utterance-error': 'An error or interruption in the utterance',
-      'pause': 'A pause or silence in the speech'
-    };
-    return descriptions[type] || 'Speech annotation';
-  };
+  // Function currently unused but kept for future functionality
+  // const getAnnotationDescription = (type: string) => {
+  //   const descriptions: Record<string, string> = {
+  //     'filler': 'A filler word or sound that doesn\'t add meaning to the speech',
+  //     'repetition': 'Repeated words or phrases in the speech',
+  //     'mispronunciation': 'A word that was pronounced incorrectly',
+  //     'morpheme': 'A morphological variation or inflection',
+  //     'morpheme-omission': 'Missing morphological ending or component',
+  //     'revision': 'Self-correction or revision in speech',
+  //     'utterance-error': 'An error or interruption in the utterance',
+  //     'pause': 'A pause or silence in the speech'
+  //   };
+  //   return descriptions[type] || 'Speech annotation';
+  // };
 
-  const handlePlayFromStart = () => {
-    onSeek(annotation.start.toString());
-    onClose();
-  };
+  // Function currently unused but kept for future functionality
+  // const handlePlayFromStart = () => {
+  //   onSeek(annotation.start.toString());
+  //   onClose();
+  // };
 
   return (
     <>

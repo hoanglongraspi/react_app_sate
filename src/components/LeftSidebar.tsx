@@ -16,8 +16,8 @@ interface LeftSidebarProps {
 
 const LeftSidebar: React.FC<LeftSidebarProps> = ({ 
   visible, 
-  onToggle, 
-  onRecord, 
+  // onToggle, // Currently unused but kept for future functionality
+  // onRecord, // Currently unused but kept for future functionality
   onImport,
   onFileUpload,
   isProcessing = false,

@@ -14,7 +14,7 @@ interface ModalsProps {
 const Modals: React.FC<ModalsProps> = ({
   showRecordingModal,
   showUploadModal,
-  isRecording,
+  // isRecording, // Currently unused but kept for future functionality
   recordingTime,
   onStopRecording,
   onPauseRecording,

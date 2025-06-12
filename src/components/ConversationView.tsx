@@ -106,24 +106,12 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         break;
 
       case 'morpheme':
-        const morpheme = segment.morphemes?.find(morph => 
-          morph.word_index === wordIndex
-        );
-        if (morpheme) {
-          annotationDetails = {
-            type: 'morpheme',
-            content: word.word,
-            start: word.start || 0,
-            end: word.end || 0,
-            duration: (word.end || 0) - (word.start || 0),
-            position,
-            additionalInfo: { wordIndex }
-          };
-        }
+        // Currently no morpheme property in Segment interface
+        // This case is kept for future implementation
         break;
 
       case 'morpheme-omission':
-        const morphemeOmission = segment.morpheme_omissions?.find(omission => 
+        const morphemeOmission = segment['morpheme-omission']?.find((omission: any) => 
           omission.word_index === wordIndex
         );
         if (morphemeOmission) {
@@ -140,8 +128,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         break;
 
       case 'revision':
-        const revision = segment.revisions?.find(rev => 
-          rev.location.includes(wordIndex)
+        const revision = segment.revision?.find((rev: any) => 
+          rev.location && rev.location.includes(wordIndex)
         );
         if (revision) {
           annotationDetails = {
@@ -198,7 +186,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     const annotations: Array<{type: string, color: string}> = [];
 
     // Check filler words
-    if (activeFilters.includes('filler')) {
+    if (activeFilters.includes('filler') && segment.fillerwords) {
       const word = segment.words[wordIndex];
       const isFillerWord = segment.fillerwords.some(filler => 
         filler.start === word.start && filler.end === word.end
@@ -209,7 +197,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
 
     // Check repetitions
-    if (activeFilters.includes('repetition')) {
+    if (activeFilters.includes('repetition') && segment.repetitions) {
       const isInRepetition = segment.repetitions.some(rep => 
         rep.words.includes(wordIndex)
       );
@@ -219,9 +207,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
 
     // Check mispronunciations
-    if (activeFilters.includes('mispronunciation')) {
+    if (activeFilters.includes('mispronunciation') && segment.mispronunciation) {
       const word = segment.words[wordIndex];
-      const isMispronunciation = segment.mispronunciation.some(mp => 
+      const isMispronunciation = segment.mispronunciation.some((mp: any) => 
         mp.start === word.start && mp.end === word.end
       );
       if (isMispronunciation) {
@@ -229,19 +217,14 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       }
     }
 
-    // Check morphemes
-    if (activeFilters.includes('morpheme')) {
-      const hasMorpheme = segment.morphemes.some(morph => 
-        morph.word_index === wordIndex
-      );
-      if (hasMorpheme) {
-        annotations.push({ type: 'morpheme', color: annotationColors.morpheme });
-      }
-    }
+    // Check morphemes (currently not implemented in Segment interface)
+    // if (activeFilters.includes('morpheme')) {
+    //   // Implementation would go here when morpheme property is added to Segment
+    // }
 
     // Check morpheme omissions
-    if (activeFilters.includes('morpheme-omission')) {
-      const hasMorphemeOmission = segment.morpheme_omissions.some(omission => 
+    if (activeFilters.includes('morpheme-omission') && segment['morpheme-omission']) {
+      const hasMorphemeOmission = segment['morpheme-omission'].some((omission: any) => 
         omission.word_index === wordIndex
       );
       if (hasMorphemeOmission) {
@@ -250,9 +233,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
 
     // Check revisions
-    if (activeFilters.includes('revision')) {
-      const isInRevision = segment.revisions.some(rev => 
-        rev.location.includes(wordIndex)
+    if (activeFilters.includes('revision') && segment.revision) {
+      const isInRevision = segment.revision.some((rev: any) => 
+        rev.location && rev.location.includes(wordIndex)
       );
       if (isInRevision) {
         annotations.push({ type: 'revision', color: annotationColors.revision });
@@ -264,14 +247,14 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
   // Check if there should be a pause annotation after a word
   const getPauseAfterWord = (segment: Segment, wordIndex: number) => {
-    if (!activeFilters.includes('pause') || wordIndex >= segment.words.length - 1) return null;
+    if (!activeFilters.includes('pause') || !segment.pauses || wordIndex >= segment.words.length - 1) return null;
     
     const currentWord = segment.words[wordIndex];
     const nextWord = segment.words[wordIndex + 1];
     
     if (!currentWord.end || !nextWord.start) return null;
     
-    const pause = segment.pauses.find(p => 
+    const pause = segment.pauses.find((p: any) => 
       p.start === currentWord.end && p.end === nextWord.start
     );
     
@@ -288,7 +271,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     <div className="conversation-view">
       {transcriptData.map((segment, segmentIndex) => {
         // Check if segment has utterance error
-        const hasUtteranceError = activeFilters.includes('utterance-error') && segment.utterance_error;
+        const hasUtteranceError = activeFilters.includes('utterance-error') && segment['utterance-error'];
         
         return (
           <div 

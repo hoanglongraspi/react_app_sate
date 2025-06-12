@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
-import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 import { type IssueCounts } from '../services/dataService';
 
 interface AudioControlsProps {
@@ -23,20 +23,20 @@ interface AudioControlsProps {
 }
 
 const AudioControls: React.FC<AudioControlsProps> = ({ 
-  onTimeUpdate, 
+  // onTimeUpdate, // Currently unused but kept for future functionality
   audioRef: externalAudioRef, 
   isPlaying, 
   currentTime, 
   duration, 
   onTogglePlayPause, 
   onSeekTo, 
-  onNextWord, 
-  onPrevWord, 
+  // onNextWord, // Currently unused but kept for future functionality
+  // onPrevWord, // Currently unused but kept for future functionality
   activeFilters, 
   onToggleFilter, 
-  onToggleCategory, 
-  categoryExpanded, 
-  onApplyPreset, 
+  // onToggleCategory, // Currently unused but kept for future functionality
+  // categoryExpanded, // Currently unused but kept for future functionality
+  // onApplyPreset, // Currently unused but kept for future functionality
   issueCounts, 
   availableErrorTypes = [] 
 }) => {
@@ -46,7 +46,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   // Safety check for activeFilters
   const safeActiveFilters = activeFilters || [];
   
-  const [volume, setVolume] = useState(80);
+  const [volume] = useState(80);
 
   useEffect(() => {
     const audio = audioRef.current;

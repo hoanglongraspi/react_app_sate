@@ -15,7 +15,7 @@ interface RightSidebarProps {
 
 const RightSidebar: React.FC<RightSidebarProps> = ({ 
   visible, 
-  onToggle, 
+  // onToggle, // Currently unused but kept for future functionality
   activeTab, 
   onTabChange, 
   issueCounts, 
@@ -140,7 +140,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
             <div>
               <h3 className="text-sm font-medium text-gray-800 mb-3">Top Issues</h3>
               <div className="space-y-3">
-                {topIssues.map((issue, index) => (
+                {topIssues.map((issue) => (
                   <div key={issue.name} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`w-3 h-3 rounded-full ${issue.color}`}></div>

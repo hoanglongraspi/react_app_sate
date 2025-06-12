@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import './App.css';
 
 // Import data service
@@ -43,11 +43,11 @@ function App() {
   const [rightSidebarVisible, setRightSidebarVisible] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   
-  // Recording state
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [showRecordingModal, setShowRecordingModal] = useState(false);
-  const [showUploadModal, setShowUploadModal] = useState(false);
+  // Recording state (currently unused but kept for future functionality)
+  // const [isRecording, setIsRecording] = useState(false);
+  // const [recordingTime, setRecordingTime] = useState(0);
+  // const [showRecordingModal, setShowRecordingModal] = useState(false);
+  // const [showUploadModal, setShowUploadModal] = useState(false);
   
   // Filter state
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
@@ -321,30 +321,30 @@ function App() {
     }
   };
 
-  // Recording controls
-  const startRecording = () => {
-    setIsRecording(true);
-    setShowRecordingModal(true);
-    setRecordingTime(0);
-    
-    // Start recording timer
-    const timer = setInterval(() => {
-      setRecordingTime(prev => prev + 1);
-    }, 1000);
-    
-    // Store timer reference for cleanup
-    (window as any).recordingTimer = timer;
-  };
+  // Recording controls (currently disabled - uncomment state variables above to enable)
+  // const startRecording = () => {
+  //   setIsRecording(true);
+  //   setShowRecordingModal(true);
+  //   setRecordingTime(0);
+  //   
+  //   // Start recording timer
+  //   const timer = setInterval(() => {
+  //     setRecordingTime(prev => prev + 1);
+  //   }, 1000);
+  //   
+  //   // Store timer reference for cleanup
+  //   (window as any).recordingTimer = timer;
+  // };
 
-  const stopRecording = () => {
-    setIsRecording(false);
-    setShowRecordingModal(false);
-    setRecordingTime(0);
-    
-    if ((window as any).recordingTimer) {
-      clearInterval((window as any).recordingTimer);
-    }
-  };
+  // const stopRecording = () => {
+  //   setIsRecording(false);
+  //   setShowRecordingModal(false);
+  //   setRecordingTime(0);
+  //   
+  //   if ((window as any).recordingTimer) {
+  //     clearInterval((window as any).recordingTimer);
+  //   }
+  // };
 
   const toggleFilter = (filter: string) => {
     setActiveFilters(prev => 
@@ -467,7 +467,7 @@ function App() {
           <LeftSidebar 
             visible={leftSidebarVisible}
             onToggle={() => setLeftSidebarVisible(!leftSidebarVisible)}
-            onRecord={startRecording}
+            onRecord={() => {}} // Disabled for now
             onImport={loadSampleData}
             onFileUpload={handleFileUpload}
             isProcessing={isProcessing}
