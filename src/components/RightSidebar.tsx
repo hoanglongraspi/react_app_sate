@@ -26,6 +26,17 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   // Calculate total issues
   const totalIssues = Object.values(issueCounts).reduce((sum, count) => sum + count, 0);
   
+  // Calculate total words
+  const calculateTotalWords = () => {
+    if (!transcriptData) return 0;
+    
+    return transcriptData.reduce((count, segment) => {
+      return count + segment.words.length;
+    }, 0);
+  };
+
+  const totalWords = calculateTotalWords();
+  
   // Format duration
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -36,10 +47,6 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   // Calculate speech rate (assuming average words per minute)
   const calculateSpeechRate = () => {
     if (!transcriptData || duration === 0) return 0;
-    
-    const totalWords = transcriptData.reduce((count, segment) => {
-      return count + segment.words.length;
-    }, 0);
     
     const wordsPerMinute = Math.round((totalWords / duration) * 60);
     return wordsPerMinute;
@@ -114,7 +121,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div className="bg-white p-4 rounded-lg border border-gray-200">
                 <div className="text-sm text-gray-600 mb-1">Total Issues</div>
                 <div className="text-2xl font-bold text-gray-800">{totalIssues}</div>
@@ -122,6 +129,10 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
               <div className="bg-white p-4 rounded-lg border border-gray-200">
                 <div className="text-sm text-gray-600 mb-1">Duration</div>
                 <div className="text-2xl font-bold text-gray-800">{formatDuration(duration)}</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-gray-200 col-span-2">
+                <div className="text-sm text-gray-600 mb-1">Total Words</div>
+                <div className="text-2xl font-bold text-gray-800">{totalWords.toLocaleString()}</div>
               </div>
             </div>
 
