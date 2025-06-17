@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 import { type IssueCounts } from '../services/dataService';
+import { getButtonColor, getAnnotationLabel } from '../lib/annotationColors';
 
 interface AudioControlsProps {
   onTimeUpdate?: (currentTime: number) => void;
@@ -98,24 +99,61 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   };
 
   return (
-    <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-3">
-      <div className="flex items-center gap-4">
-        
+    <div className="sticky bottom-0 bg-white border-t border-gray-200">
+      {/* Top Row - Time and Progress Bar with full width */}
+      <div className="px-6 py-3">
+        <div className="flex items-center gap-4 mb-2">
         {/* Current Time */}
-        <span className="text-sm font-mono text-gray-700 min-w-[40px]">
+          <span className="text-sm font-mono text-gray-700 min-w-[50px]">
           {formatTime(currentTime)}
         </span>
 
+          {/* Progress Bar - Full Width */}
+          <div className="flex-1">
+            <div 
+              className={`h-3 bg-gray-200 rounded-full relative group ${isAudioReady ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+              onClick={handleSeek}
+            >
+              <div 
+                className="h-3 bg-blue-600 rounded-full relative transition-all duration-150"
+                style={{ width: `${progressPercentage}%` }}
+              >
+                {isAudioReady && (
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 bg-blue-600 rounded-full border-2 border-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Duration */}
+          <span className="text-sm font-mono text-gray-700 min-w-[50px]">
+            {formatTime(duration)}
+          </span>
+
+          {/* Audio Status Indicator */}
+          {!isAudioReady && (
+            <span className="text-xs text-gray-500 italic">
+              Loading audio...
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom Row - Controls and Filters */}
+      <div className="px-6 py-4">
+        <div className="flex items-center justify-between gap-6">
+          {/* Left Side - Playback Controls */}
+          <div className="flex items-center gap-4">
         {/* Skip Back Button */}
         <Button 
           variant="ghost" 
           size="icon"
           onClick={skipBackward}
           disabled={!isAudioReady}
-          className="h-8 w-8 text-gray-600 hover:text-gray-800 disabled:opacity-50"
+              className="h-10 w-10 text-gray-600 hover:text-gray-800 disabled:opacity-50"
           title="Skip back 10 seconds"
         >
-          <SkipBack className="h-4 w-4" />
+              <SkipBack className="h-5 w-5" />
         </Button>
 
         {/* Play/Pause Button */}
@@ -123,10 +161,10 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           onClick={handlePlayPause}
           size="icon"
           disabled={!isAudioReady}
-          className="h-10 w-10 bg-blue-600 hover:bg-blue-700 text-white rounded-full disabled:opacity-50 disabled:bg-gray-400"
+              className="h-12 w-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full disabled:opacity-50 disabled:bg-gray-400"
           title={isPlaying ? "Pause" : "Play"}
         >
-          {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
+              {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 ml-0.5" />}
         </Button>
 
         {/* Skip Forward Button */}
@@ -135,93 +173,20 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           size="icon"
           onClick={skipForward}
           disabled={!isAudioReady}
-          className="h-8 w-8 text-gray-600 hover:text-gray-800 disabled:opacity-50"
+              className="h-10 w-10 text-gray-600 hover:text-gray-800 disabled:opacity-50"
           title="Skip forward 10 seconds"
         >
-          <SkipForward className="h-4 w-4" />
+              <SkipForward className="h-5 w-5" />
         </Button>
-
-        {/* Progress Bar */}
-        <div className="flex-1 mx-4">
-          <div 
-            className={`h-2 bg-gray-200 rounded-full relative group ${isAudioReady ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-            onClick={handleSeek}
-          >
-            <div 
-              className="h-2 bg-blue-600 rounded-full relative transition-all duration-150"
-              style={{ width: `${progressPercentage}%` }}
-            >
-              {isAudioReady && (
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-              )}
-            </div>
-          </div>
         </div>
 
-        {/* Duration */}
-        <span className="text-sm font-mono text-gray-700 min-w-[40px]">
-          {formatTime(duration)}
-        </span>
-
-        {/* Audio Status Indicator */}
-        {!isAudioReady && (
-          <span className="text-xs text-gray-500 italic">
-            Loading audio...
-          </span>
-        )}
-
-        {/* Filter Buttons */}
-        <div className="flex items-center gap-2 ml-6">
+          {/* Right Side - Filter Buttons */}
+          <div className="flex items-center gap-2 flex-wrap">
           {availableErrorTypes.map((errorType) => {
-            const getButtonConfig = (type: string) => {
-              const isActive = safeActiveFilters.includes(type);
-              switch (type) {
-                case 'filler':
-                  return {
-                    label: 'Filler words',
-                    color: isActive ? 'bg-yellow-500 text-white' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200',
-                    count: issueCounts.filler
-                  };
-                case 'repetition':
-                  return {
-                    label: 'Repetition',
-                    color: isActive ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200',
-                    count: issueCounts.repetition
-                  };
-                case 'utterance-error':
-                  return {
-                    label: 'Mispronunciation',
-                    color: isActive ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200',
-                    count: issueCounts['utterance-error']
-                  };
-                case 'mispronunciation':
-                  return {
-                    label: 'Mispronunciation',
-                    color: isActive ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200',
-                    count: issueCounts.mispronunciation
-                  };
-                case 'morpheme-omission':
-                  return {
-                    label: 'Morphemes',
-                    color: isActive ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200',
-                    count: issueCounts['morpheme-omission']
-                  };
-                case 'revision':
-                  return {
-                    label: 'Revisions',
-                    color: isActive ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200',
-                    count: issueCounts.revision
-                  };
-                default:
-                  return {
-                    label: type.charAt(0).toUpperCase() + type.slice(1),
-                    color: isActive ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
-                    count: 0
-                  };
-              }
-            };
-
-            const config = getButtonConfig(errorType);
+              const isActive = safeActiveFilters.includes(errorType);
+              const buttonColor = getButtonColor(errorType, isActive);
+              const label = getAnnotationLabel(errorType);
+              const count = issueCounts[errorType as keyof IssueCounts] || 0;
 
             return (
               <Button 
@@ -229,15 +194,15 @@ const AudioControls: React.FC<AudioControlsProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => onToggleFilter(errorType)}
-                className={`text-sm px-3 py-1.5 border-0 rounded-full ${config.color} transition-colors`}
-                title={`Toggle ${config.label} (${config.count} found)`}
+                  className={`text-sm px-3 py-2 border-0 rounded-full ${buttonColor} transition-colors`}
+                  title={`Toggle ${label} (${count} found)`}
               >
-                {config.label}
+                  {label}
               </Button>
             );
           })}
 
-          {/* Show All Button */}
+          {/* Show All / Hide All Button */}
           {availableErrorTypes.length > 0 && (
             <Button 
               variant="outline"
@@ -260,31 +225,17 @@ const AudioControls: React.FC<AudioControlsProps> = ({
                   });
                 }
               }}
-              className={`text-sm px-3 py-1.5 border-0 rounded-full transition-colors ${
+                className={`text-sm px-3 py-2 border-0 rounded-full transition-colors ${
                 availableErrorTypes.every(type => safeActiveFilters.includes(type))
                   ? 'bg-gray-800 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
-              title="Toggle all error annotations"
+              title={`${availableErrorTypes.every(type => safeActiveFilters.includes(type)) ? 'Hide' : 'Show'} all error annotations`}
             >
-              Show All
+              {availableErrorTypes.every(type => safeActiveFilters.includes(type)) ? 'Hide All' : 'Show All'}
             </Button>
           )}
-
-          {/* Pauses button (if not in error types but we want to show it) */}
-          {/*<Button 
-            variant="outline"
-            size="sm"
-            onClick={() => onToggleFilter('pause')}
-            className={`text-sm px-3 py-1.5 border-0 rounded-full transition-colors ${
-              safeActiveFilters.includes('pause')
-                ? 'bg-blue-500 text-white'
-                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-            }`}
-            title="Toggle pause annotations"
-          >
-            Pauses
-          </Button>*/}
+          </div>
         </div>
       </div>
     </div>

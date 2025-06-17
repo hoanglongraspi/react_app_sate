@@ -1,238 +1,309 @@
-import React, { useRef, useState } from 'react';
-import { Upload, FileAudio, X, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { AudioLines, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from './ui/button';
-import { AudioCacheStatus } from './AudioCacheStatus';
+import { useRecordings } from '@/hooks/useRecordings';
+import { getRecordingUrl, deleteRecording } from '@/services/dataService';
+import { useAuth } from '@/contexts/AuthProvider';
 
 interface LeftSidebarProps {
   visible: boolean;
   onToggle: () => void;
   onRecord: () => void;
   onImport: () => void;
-  onFileUpload?: (file: File) => void;
   isProcessing?: boolean;
   processingProgress?: number;
   onLogout?: () => void;
+  onSelectRecording?: (audioUrl: string, recordingId: string) => void;
 }
 
 const LeftSidebar: React.FC<LeftSidebarProps> = ({ 
   visible, 
   // onToggle, // Currently unused but kept for future functionality
-  // onRecord, // Currently unused but kept for future functionality
+  onRecord,
   onImport,
-  onFileUpload,
   isProcessing = false,
   processingProgress = 0,
-  onLogout
+  onLogout,
+  onSelectRecording
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [dragActive, setDragActive] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // Fetch user recordings
+  const { data: recordings, isLoading: recLoading, error: recError } = useRecordings();
+  const { user } = useAuth();
+  
+  // Delete confirmation state
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    show: boolean;
+    recordingId: string;
+    recordingName: string;
+  }>({ show: false, recordingId: '', recordingName: '' });
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type: 'success' | 'error';
+  }>({ show: false, message: '', type: 'success' });
 
-  const handleFileSelect = (file: File) => {
-    if (file && file.type.startsWith('audio/')) {
-      setSelectedFile(file);
-      if (onFileUpload) {
-        onFileUpload(file);
-      }
-    } else {
-      alert('Please select a valid audio file (MP3, WAV, M4A, etc.)');
+  // Auto-hide toast after 3 seconds
+  React.useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast({ show: false, message: '', type: 'success' });
+      }, 3000);
+      return () => clearTimeout(timer);
     }
+  }, [toast.show]);
+
+  const handleDeleteClick = (recordingId: string, recordingName: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the recording selection
+    setDeleteConfirm({
+      show: true,
+      recordingId,
+      recordingName
+    });
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileSelect(file);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
+  const handleDeleteConfirm = async () => {
+    if (!user || !deleteConfirm.recordingId) return;
     
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      handleFileSelect(file);
+    setIsDeleting(deleteConfirm.recordingId);
+    
+    try {
+      const result = await deleteRecording(deleteConfirm.recordingId, user.id);
+      
+      if (result.success) {
+        setToast({
+          show: true,
+          message: `"${deleteConfirm.recordingName}" deleted successfully`,
+          type: 'success'
+        });
+      } else {
+        setToast({
+          show: true,
+          message: result.error || 'Failed to delete recording',
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      setToast({
+        show: true,
+        message: 'An error occurred while deleting the recording',
+        type: 'error'
+      });
+    } finally {
+      setIsDeleting(null);
+      setDeleteConfirm({ show: false, recordingId: '', recordingName: '' });
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(true);
+  const handleDeleteCancel = () => {
+    setDeleteConfirm({ show: false, recordingId: '', recordingName: '' });
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-  };
-
-  const clearSelectedFile = () => {
-    setSelectedFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  // Function to truncate long filenames
+  const truncateFileName = (fileName: string, maxLength: number = 10) => {
+    if (fileName.length <= maxLength) {
+      return fileName;
     }
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${fileName.substring(0, 15)}....`;
   };
 
   return (
-    <div className={`w-80 bg-gray-50 border-r border-gray-200 flex flex-col transition-transform duration-300 ${
-      visible ? 'translate-x-0' : '-translate-x-full'
-    }`}>
-      {/* SATE Logo/Title */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">SATE</h1>
-            <p className="text-sm text-gray-600 mt-1">Speech Analysis Tool</p>
-          </div>
-          {onLogout && (
-            <button
-              onClick={onLogout}
-              className="text-xs text-gray-500 hover:text-gray-700 underline"
-              title="Logout"
-            >
-              Logout
-            </button>
-          )}
-        </div>
-      </div>
-      
-      {/* File Upload Area */}
-      <div className="p-6 space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700">Upload Audio File</h3>
-        
-        {/* Drag and Drop Area */}
-        <div
-          className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
-            dragActive
-              ? 'border-blue-400 bg-blue-50'
-              : selectedFile
-              ? 'border-green-400 bg-green-50'
-              : 'border-gray-300 bg-gray-50 hover:border-gray-400'
-          }`}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="audio/*"
-            onChange={handleFileInputChange}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            disabled={isProcessing}
-          />
-          
-          <div className="text-center">
-            {selectedFile ? (
-              <div className="space-y-2">
-                <FileAudio className="w-8 h-8 text-green-600 mx-auto" />
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
-                  <p className="text-xs text-gray-600">{formatFileSize(selectedFile.size)}</p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    clearSelectedFile();
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
-                  disabled={isProcessing}
-                >
-                  <X className="w-4 h-4 mr-1" />
-                  Remove
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Upload className="w-8 h-8 text-gray-400 mx-auto" />
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-900">
-                    Drop your audio file here
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    or click to browse
-                  </p>
-                </div>
-                <p className="text-xs text-gray-500">
-                  Supports MP3, WAV, M4A, and other audio formats
-                </p>
-              </div>
+    <>
+      <div className={`w-80 bg-gray-50 border-r border-gray-200 flex flex-col transition-transform duration-300 ${
+        visible ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        {/* SATE Logo/Title */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">SATE</h1>
+              <p className="text-sm text-gray-600 mt-1">Speech Annotation and Transcription Enhancer</p>
+            </div>
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="text-xs text-gray-500 hover:text-gray-700 underline"
+                title="Logout"
+              >
+                Logout
+              </button>
             )}
           </div>
         </div>
-
-        {/* Processing Progress */}
-        {isProcessing && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-              <span className="text-sm text-gray-700">Processing audio...</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${processingProgress}%` }}
-              ></div>
-            </div>
-            <p className="text-xs text-gray-600 text-center">
-              {processingProgress}% complete
-            </p>
+        
+        {/* Action Buttons */}
+        <div className="p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-gray-700">Get Started</h3>
+          
+          <div className="flex gap-2">
+            <Button
+              onClick={onRecord}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isProcessing}
+            >
+              <div className="w-4 h-4 mr-2 bg-white rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+              </div>
+              Record
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={onImport}
+              className="flex-1"
+              disabled={isProcessing}
+            >
+              Import
+            </Button>
           </div>
-        )}
 
-        {/* Upload Button */}
-        {selectedFile && !isProcessing && (
-          <Button
-            onClick={() => selectedFile && onFileUpload && onFileUpload(selectedFile)}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            disabled={isProcessing}
-          >
-            Analyze Audio
-          </Button>
-        )}
-
-        {/* Sample Data Button */}
-        <div className="pt-4 border-t border-gray-200">
-          <Button
-            onClick={onImport}
-            variant="outline"
-            className="w-full border-gray-300 text-gray-700 hover:bg-gray-100"
-            disabled={isProcessing}
-          >
-            Use Sample Data
-          </Button>
+          {/* Processing Progress */}
+          {isProcessing && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 animate-spin text-blue-600">⟳</div>
+                <span className="text-sm text-gray-700">Processing audio...</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${processingProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-600 text-center">
+                {processingProgress}% complete
+              </p>
+            </div>
+          )}
+        </div>
+        
+        {/* Recordings List */}
+        <div className="flex-1 overflow-y-auto p-6 border-t border-gray-200">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+            <AudioLines className="w-4 h-4" /> Your Recordings
+          </h3>
+          {recLoading && <p className="text-xs text-gray-500">Loading...</p>}
+          {recError && <p className="text-xs text-red-600">Failed to load recordings</p>}
+          {(!recordings || recordings.length === 0) && !recLoading && (
+            <p className="text-xs text-gray-500">No recordings yet.</p>
+          )}
+          <ul className="space-y-2">
+            {recordings?.map((r) => (
+              <li key={r.id} className="group">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={async () => {
+                      if (!onSelectRecording) return;
+                      const url = await getRecordingUrl(r.file_path);
+                      if (url) {
+                        onSelectRecording(url, r.id);
+                      }
+                    }}
+                    className="flex-1 text-left text-sm text-gray-800 hover:bg-gray-100 p-2 rounded-lg flex justify-between"
+                    title={r.file_name || r.file_path.split('/').pop() || ''}
+                  >
+                    <span className="truncate">{truncateFileName(r.file_name || r.file_path.split('/').pop() || '')}</span>
+                    <span className="text-xs text-gray-500">{new Date(r.created_at).toLocaleDateString()}</span>
+                  </button>
+                  
+                  <button
+                    onClick={(e) => handleDeleteClick(r.id, r.file_name || r.file_path.split('/').pop() || 'Unknown', e)}
+                    disabled={isDeleting === r.id}
+                    className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-600 transition-all duration-200 disabled:opacity-50"
+                    title="Delete recording"
+                  >
+                    {isDeleting === r.id ? (
+                      <div className="w-4 h-4 animate-spin">⟳</div>
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        {/* Instructions */}
+        <div className="p-6 mt-auto border-t border-gray-200">
+          <h4 className="text-sm font-medium text-gray-800 mb-2">How it works</h4>
+          <ol className="text-xs text-gray-600 space-y-1">
+            <li>1. Record or import an audio file</li>
+            <li>2. Wait for AI analysis</li>
+            <li>3. Review speech patterns</li>
+            <li>4. Export results</li>
+          </ol>
         </div>
       </div>
-      
-      {/* Audio Cache Status */}
-      <div className="p-6 border-t border-gray-200">
-        <AudioCacheStatus />
-      </div>
-      
-      {/* Instructions */}
-      <div className="p-6 mt-auto border-t border-gray-200">
-        <h4 className="text-sm font-medium text-gray-800 mb-2">How it works</h4>
-        <ol className="text-xs text-gray-600 space-y-1">
-          <li>1. Upload an audio file</li>
-          <li>2. Wait for AI analysis</li>
-          <li>3. Review speech patterns</li>
-          <li>4. Export results</li>
-        </ol>
-      </div>
-    </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Delete Recording</h3>
+                <p className="text-sm text-gray-600">This action cannot be undone</p>
+              </div>
+            </div>
+            
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to delete "<strong>{truncateFileName(deleteConfirm.recordingName)}</strong>"? 
+              This will permanently remove the recording and all associated data.
+            </p>
+            
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                onClick={handleDeleteCancel}
+                disabled={isDeleting !== null}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting !== null}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="w-4 h-4 animate-spin mr-2">⟳</div>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 ${
+          toast.type === 'success' 
+            ? 'bg-green-100 border border-green-200 text-green-800' 
+            : 'bg-red-100 border border-red-200 text-red-800'
+        }`}>
+          <div className="flex items-center gap-2">
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+              toast.type === 'success' ? 'bg-green-200' : 'bg-red-200'
+            }`}>
+              {toast.type === 'success' ? '✓' : '✕'}
+            </div>
+            <p className="text-sm font-medium">{toast.message}</p>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

@@ -23,6 +23,15 @@ A modern React-based speech analysis tool for speech therapists and language pro
 - **Mispronunciations** - Incorrect pronunciations in purple
 - **Grammar issues** - Morpheme omissions/errors in green
 
+### ✏️ Advanced Transcript Editing
+- **Popup editor** - Focused editing environment without distractions
+- **Time controls** - Seek to segment start/end, play specific segments
+- **Real-time validation** - Live preview of changes before saving
+- **Word-level editing** - Modify individual words with timestamps
+- **Speaker management** - Change speaker assignments easily
+- **Unsaved changes protection** - Confirmation dialogs prevent data loss
+- **Timing adjustment** - Fine-tune segment start/end times with precision
+
 ### 📊 Analysis Dashboard
 - **Issue overview** with counts and statistics
 - **Performance metrics** (fluency score, clarity score)
