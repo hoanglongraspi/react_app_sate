@@ -461,7 +461,7 @@ export const calculateSpeechAnalysis = (transcriptData: TranscriptData): SpeechA
   const allWords = new Set<string>();
   
   transcriptData.segments.forEach(segment => {
-    segment.words.forEach((word, wordIndex) => {
+    segment.words.forEach((word) => {
       if (!isFillerOrPunctuation(word.word)) {
         ntw++;
         
