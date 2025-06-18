@@ -101,13 +101,6 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
 
   const ndw = calculateNDW();
   
-  // Format duration
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   // Calculate speech rate (assuming average words per minute)
   const calculateSpeechRate = () => {
     if (!transcriptData || duration === 0) return 0;
