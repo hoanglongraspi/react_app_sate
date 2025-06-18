@@ -260,11 +260,13 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                   <div className="p-1.5 bg-purple-100 rounded-lg">
                     <Clock className="w-4 h-4 text-purple-600" />
                   </div>
-                  <span className="text-xs font-medium text-purple-700">Duration</span>
+                  <span className="text-xs font-medium text-purple-700">Pause/Word Ratio</span>
                 </div>
-                <div className="text-2xl font-bold text-purple-800">{formatDuration(duration)}</div>
+                <div className="text-2xl font-bold text-purple-800">
+                  {totalWords > 0 ? ((speechAnalysis?.numberOfPauses || 0) / totalWords).toFixed(3) : '0.000'}
+                </div>
                 <div className="text-xs text-purple-600">
-                  {Math.floor(duration / 60)}m {Math.floor(duration % 60)}s total
+                  {speechAnalysis?.numberOfPauses || 0} pauses / {totalWords} words
                 </div>
               </div>
               
