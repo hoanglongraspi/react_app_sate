@@ -39,7 +39,30 @@
       ]
     },
     {
-      "end": 21.53,
+      "end": 7.92,
+      "fillerwords": [],
+      "morpheme_omissions": [],
+      "morphemes": [],
+      "pauses": [],
+      "repetitions": [],
+      "speaker": "SPEAKER_00",
+      "start": 7.08,
+      "text": "A rabbit.",
+      "words": [
+        {
+          "end": 7.16,
+          "start": 7.08,
+          "word": "A"
+        },
+        {
+          "end": 7.92,
+          "start": 7.22,
+          "word": "rabbit."
+        }
+      ]
+    },
+    {
+      "end": 14.32,
       "fillerwords": [
         {
           "content": "[UM]",
@@ -51,11 +74,6 @@
       "morpheme_omissions": [],
       "morphemes": [],
       "pauses": [
-        {
-          "duration": 0.74,
-          "end": 8.66,
-          "start": 7.92
-        },
         {
           "duration": 0.6,
           "end": 11.82,
@@ -70,33 +88,13 @@
           "duration": 0.46,
           "end": 13.74,
           "start": 13.28
-        },
-        {
-          "duration": 0.76,
-          "end": 15.08,
-          "start": 14.32
-        },
-        {
-          "duration": 0.66,
-          "end": 16.34,
-          "start": 15.68
         }
       ],
       "repetitions": [],
       "speaker": "SPEAKER_00",
-      "start": 7.08,
-      "text": "A rabbit. Some help with the [UM] with the dog. And you want some help to with me. You know how to make a sand castle.",
+      "start": 8.66,
+      "text": "Some help with the [UM] with the dog.",
       "words": [
-        {
-          "end": 7.16,
-          "start": 7.08,
-          "word": "A"
-        },
-        {
-          "end": 7.92,
-          "start": 7.22,
-          "word": "rabbit."
-        },
         {
           "end": 9.28,
           "start": 8.66,
@@ -136,7 +134,26 @@
           "end": 14.32,
           "start": 13.74,
           "word": "dog."
-        },
+        }
+      ]
+    },
+    {
+      "end": 18.96,
+      "fillerwords": [],
+      "morpheme_omissions": [],
+      "morphemes": [],
+      "pauses": [
+        {
+          "duration": 0.66,
+          "end": 16.34,
+          "start": 15.68
+        }
+      ],
+      "repetitions": [],
+      "speaker": "SPEAKER_00",
+      "start": 15.08,
+      "text": "And you want some help to with me.",
+      "words": [
         {
           "end": 15.68,
           "start": 15.08,
@@ -176,7 +193,20 @@
           "end": 18.96,
           "start": 18.61,
           "word": "me."
-        },
+        }
+      ]
+    },
+    {
+      "end": 21.5,
+      "fillerwords": [],
+      "morpheme_omissions": [],
+      "morphemes": [],
+      "pauses": [],
+      "repetitions": [],
+      "speaker": "SPEAKER_00",
+      "start": 19.12,
+      "text": "You know how to make a sand castle.",
+      "words": [
         {
           "end": 19.3,
           "start": 19.12,

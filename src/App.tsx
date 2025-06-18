@@ -1091,6 +1091,7 @@ function MainApp() {
             onToggle={() => setLeftSidebarVisible(!leftSidebarVisible)}
             onRecord={startRecording}
             onImport={() => setShowImportPopup(true)}
+            onUseSampleData={loadSampleData}
             isProcessing={isProcessing}
             processingProgress={processingProgress}
             onLogout={handleLogout}

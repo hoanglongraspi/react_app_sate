@@ -10,6 +10,7 @@ interface LeftSidebarProps {
   onToggle: () => void;
   onRecord: () => void;
   onImport: () => void;
+  onUseSampleData?: () => void;
   isProcessing?: boolean;
   processingProgress?: number;
   onLogout?: () => void;
@@ -21,6 +22,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
   // onToggle, // Currently unused but kept for future functionality
   onRecord,
   onImport,
+  onUseSampleData,
   isProcessing = false,
   processingProgress = 0,
   onLogout,
@@ -157,6 +159,16 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
               Import
             </Button>
           </div>
+
+          {/* Sample Data Button */}
+          <Button
+            variant="outline"
+            onClick={onUseSampleData}
+            className="w-full text-sm bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 hover:border-purple-300 hover:text-purple-800"
+            disabled={isProcessing}
+          >
+                Use Sample Data
+          </Button>
 
           {/* Processing Progress */}
           {isProcessing && (
