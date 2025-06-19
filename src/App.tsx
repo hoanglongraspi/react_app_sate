@@ -80,6 +80,9 @@ function MainApp() {
   const [categoryExpanded, setCategoryExpanded] = useState<{[key: string]: boolean}>({});
   const [availableErrorTypes, setAvailableErrorTypes] = useState<string[]>([]);
 
+  // Speaker selection state
+  const [selectedSpeaker, setSelectedSpeaker] = useState<string | undefined>(undefined);
+
   // Processing state
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
@@ -1187,6 +1190,8 @@ function MainApp() {
             transcriptData={transcriptData}
             activeFilters={activeFilters}
             speechAnalysis={speechAnalysis || undefined}
+            selectedSpeaker={selectedSpeaker}
+            onSpeakerChange={setSelectedSpeaker}
           />
         )}
 

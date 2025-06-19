@@ -1,0 +1,260 @@
+# SATE React - Cursor Rules
+
+## Project Overview
+This is a Speech Analysis Tool and Evaluator (SATE) built with React 19, TypeScript, Tailwind CSS, and Supabase. It analyzes speech transcripts for linguistic features like pauses, fillers, morphological complexity, and speech quality metrics.
+
+## Core Technologies & Patterns
+
+### Tech Stack
+- **Frontend**: React 19 with TypeScript, Vite
+- **Styling**: Tailwind CSS with custom design system
+- **Backend**: Supabase (auth, storage, database)
+- **State Management**: React hooks (useState, useRef, useEffect)
+- **API**: Axios for external speech processing API
+- **Audio**: Web Audio API for recording and playback
+- **UI Components**: Radix UI primitives with custom styling
+
+### Architecture Patterns
+- Component-based architecture with clear separation of concerns
+- Service layer pattern for data operations (`services/`)
+- Custom hooks for reusable logic (`hooks/`)
+- Context providers for global state (`contexts/`)
+- Utility functions for common operations (`lib/`)
+
+## Code Style & Conventions
+
+### TypeScript
+- Use strict TypeScript configuration
+- Prefer interfaces over types for object shapes
+- Use explicit return types for functions
+- Implement proper error handling with try-catch blocks
+- Use optional chaining and nullish coalescing where appropriate
+
+```typescript
+// Good
+interface ComponentProps {
+  data: Segment[];
+  onUpdate?: (segments: Segment[]) => void;
+}
+
+// Component with proper typing
+const Component: React.FC<ComponentProps> = ({ data, onUpdate }) => {
+  // Implementation
+};
+```
+
+### React Patterns
+- Use functional components with hooks
+- Prefer `React.FC` type for component definitions
+- Use `useState` for local state, `useRef` for DOM references
+- Implement proper cleanup in `useEffect` hooks
+- Use callback functions for event handlers
+
+```typescript
+// Good pattern
+const [isPlaying, setIsPlaying] = useState(false);
+const audioRef = useRef<HTMLAudioElement>(null);
+
+useEffect(() => {
+  const audio = audioRef.current;
+  if (!audio) return;
+
+  const handleEnded = () => setIsPlaying(false);
+  audio.addEventListener('ended', handleEnded);
+  
+  return () => audio.removeEventListener('ended', handleEnded);
+}, []);
+```
+
+### Import Organization
+1. React imports first
+2. Third-party libraries
+3. Internal utilities and contexts
+4. Service layer imports
+5. Component imports
+6. Type-only imports last
+
+```typescript
+import { useState, useRef, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthProvider';
+import { loadRecording, type Segment } from './services/dataService';
+import LeftSidebar from './components/LeftSidebar';
+```
+
+### Component Structure
+- Props interface at the top
+- Component implementation with proper typing
+- Helper functions inside component when specific to component
+- Export at bottom
+
+```typescript
+interface RightSidebarProps {
+  visible: boolean;
+  onToggle: () => void;
+  transcriptData: Segment[];
+  selectedSpeaker?: string;
+  onSpeakerChange?: (speaker: string) => void;
+}
+
+const RightSidebar: React.FC<RightSidebarProps> = ({ 
+  visible, 
+  onToggle, 
+  transcriptData,
+  selectedSpeaker,
+  onSpeakerChange
+}) => {
+  // Component logic
+};
+
+export default RightSidebar;
+```
+
+## Domain-Specific Patterns
+
+### Speech Analysis Types
+- Use the established `Segment`, `Word`, `IssueCounts` interfaces
+- Implement speaker-specific calculations
+- Handle morphological analysis with proper filtering
+
+```typescript
+// Core speech analysis interfaces
+interface Segment {
+  text: string;
+  start: number;
+  end: number;
+  speaker: string;
+  words: Word[];
+  fillerwords?: FillerWord[];
+  repetitions?: Repetition[];
+  pauses?: any[];
+  morphemes?: any[];
+}
+
+interface IssueCounts {
+  pause: number;
+  filler: number;
+  repetition: number;
+  mispronunciation: number;
+  morpheme: number;
+  'morpheme-omission': number;
+  revision: number;
+  'utterance-error': number;
+}
+```
+
+### Audio Handling
+- Use `useRef` for audio elements
+- Implement proper event listeners for audio events
+- Handle audio loading states and errors
+- Use Web Audio API for recording functionality
+
+### Data Processing
+- Filter out filler words and punctuation in calculations
+- Implement speaker-specific metrics
+- Handle morphological complexity calculations
+- Use proper error handling for API calls
+
+## UI/UX Patterns
+
+### Tailwind Usage
+- Use the custom color palette defined in `tailwind.config.js`
+- Implement responsive design with mobile-first approach
+- Use consistent spacing and typography scales
+- Leverage custom classes for repeated patterns
+
+```typescript
+// Good Tailwind patterns
+className="bg-white border border-gray-200 rounded-lg shadow-card p-4"
+className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+```
+
+### Component Patterns
+- Implement proper loading states
+- Use conditional rendering for different states
+- Handle empty states gracefully
+- Implement proper error boundaries
+
+### State Management
+- Use local state for component-specific data
+- Implement proper state updates with functional updates
+- Use context for global state (auth, theme)
+- Handle async operations with proper loading states
+
+## File Organization
+
+### Directory Structure
+```
+src/
+  components/     # Reusable UI components
+  contexts/       # React contexts
+  hooks/          # Custom hooks
+  lib/            # Utility functions
+  services/       # API and data services
+  utils/          # Helper functions
+  types/          # Type definitions (if needed)
+```
+
+### Naming Conventions
+- Components: PascalCase (`LeftSidebar.tsx`)
+- Hooks: camelCase starting with "use" (`useRecordings.ts`)
+- Services: camelCase (`dataService.ts`)
+- Utilities: camelCase (`utils.ts`)
+- Constants: UPPER_SNAKE_CASE
+
+## Development Guidelines
+
+### Error Handling
+- Implement proper try-catch blocks for async operations
+- Use specific error messages for different failure cases
+- Handle network errors gracefully
+- Provide user-friendly error messages
+
+### Performance
+- Use React.memo for expensive components
+- Implement proper dependency arrays in useEffect
+- Avoid unnecessary re-renders
+- Use useCallback for event handlers passed to children
+
+### Accessibility
+- Use semantic HTML elements
+- Implement proper ARIA labels
+- Ensure keyboard navigation
+- Use proper color contrast ratios
+
+### Testing Considerations
+- Write components that are easy to test
+- Separate business logic from UI components
+- Use proper prop types and interfaces
+- Handle edge cases and error states
+
+## API Integration
+
+### Supabase Patterns
+- Use the established client configuration
+- Implement proper authentication checks
+- Handle storage operations with error handling
+- Use proper TypeScript types for database operations
+
+### External API
+- Implement proper error handling for the speech processing API
+- Use FormData for file uploads
+- Handle different response formats
+- Implement retry logic for failed requests
+
+## Code Quality
+
+### General Rules
+- Follow the existing ESLint configuration
+- Use consistent formatting
+- Write self-documenting code with clear variable names
+- Implement proper error boundaries
+- Use TypeScript strict mode features
+
+### Comments
+- Use JSDoc for complex functions
+- Comment complex business logic
+- Explain domain-specific calculations
+- Document API integration patterns
+
+This file should be placed in the root directory as `.cursorrules` to provide context-aware assistance for your SATE React project. 
