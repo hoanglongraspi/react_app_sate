@@ -34,11 +34,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   // onToggle, // Currently unused but kept for future functionality
   activeTab, 
   onTabChange, 
-  issueCounts, 
-  duration, 
+  issueCounts,  
   transcriptData, 
   activeFilters,
-  speechAnalysis,
   selectedSpeaker,
   onSpeakerChange
 }) => {
