@@ -25,6 +25,8 @@ interface RightSidebarProps {
   transcriptData: Segment[];
   activeFilters: string[];
   speechAnalysis?: SpeechAnalysis;
+  selectedSpeaker?: string;
+  onSpeakerChange?: (speaker: string) => void;
 }
 
 const RightSidebar: React.FC<RightSidebarProps> = ({ 
@@ -36,14 +38,64 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   duration, 
   transcriptData, 
   activeFilters,
-  speechAnalysis 
+  speechAnalysis,
+  selectedSpeaker,
+  onSpeakerChange
 }) => {
-  // Calculate total issues
-  const totalIssues = Object.values(issueCounts).reduce((sum, count) => sum + count, 0);
+  // Get all available speakers
+  const allSpeakers = Array.from(new Set(transcriptData.map(segment => segment.speaker)));
   
-  // Calculate total words (excluding fillers and punctuation)
+  // Calculate utterance counts for each speaker to determine default
+  const speakerUtteranceCounts = allSpeakers.reduce((counts, speaker) => {
+    counts[speaker] = transcriptData.filter(segment => segment.speaker === speaker).length;
+    return counts;
+  }, {} as Record<string, number>);
+  
+  // Get default speaker (speaker with most utterances)
+  const defaultSpeaker = allSpeakers.reduce((maxSpeaker, speaker) => 
+    speakerUtteranceCounts[speaker] > speakerUtteranceCounts[maxSpeaker] ? speaker : maxSpeaker
+  , allSpeakers[0] || '');
+  
+  // Use selected speaker or default
+  const currentSpeaker = selectedSpeaker || defaultSpeaker;
+  
+  // Filter transcript data by selected speaker
+  const speakerTranscriptData = transcriptData.filter(segment => segment.speaker === currentSpeaker);
+  
+  // Calculate speaker-specific issue counts
+  const speakerIssueCounts = {
+    pause: 0,
+    filler: 0,
+    repetition: 0,
+    mispronunciation: 0,
+    morpheme: 0,
+    'morpheme-omission': 0,
+    revision: 0,
+    'utterance-error': 0
+  };
+  
+  speakerTranscriptData.forEach(segment => {
+    if (segment.fillerwords) speakerIssueCounts.filler += segment.fillerwords.length;
+    if (segment.repetitions) speakerIssueCounts.repetition += segment.repetitions.length;
+    if (segment.pauses) speakerIssueCounts.pause += segment.pauses.length;
+    if (segment['utterance-error']) speakerIssueCounts['utterance-error'] += segment['utterance-error'].length;
+    if (segment.mispronunciation) speakerIssueCounts.mispronunciation += segment.mispronunciation.length;
+    if (segment.morpheme_omissions) speakerIssueCounts['morpheme-omission'] += segment.morpheme_omissions.length;
+    if (segment.morphemes) {
+      const visibleMorphemes = segment.morphemes.filter((morpheme: any) => 
+        morpheme.morpheme_form && morpheme.morpheme_form !== '<IRR>'
+      );
+      speakerIssueCounts.morpheme += visibleMorphemes.length;
+    }
+    if (segment.revision) speakerIssueCounts.revision += segment.revision.length;
+  });
+  
+  // Calculate total issues for selected speaker
+  const totalIssues = Object.values(speakerIssueCounts).reduce((sum, count) => sum + count, 0);
+  
+  // Calculate total words (excluding fillers and punctuation) for selected speaker
   const calculateTotalWords = () => {
-    if (!transcriptData) return 0;
+    if (!speakerTranscriptData) return 0;
     
     // Filter out filler words and punctuation (same logic as NTW)
     const isFillerOrPunctuation = (word: string): boolean => {
@@ -56,22 +108,17 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
              /^[.,!?;:]+$/.test(word);
     };
     
-    return transcriptData.reduce((count, segment) => {
+    return speakerTranscriptData.reduce((count, segment) => {
       return count + segment.words.filter(word => !isFillerOrPunctuation(word.word)).length;
     }, 0);
   };
 
   const totalWords = calculateTotalWords();
   
-  // Calculate NDW (Number of Different Words)
+  // Calculate NDW (Number of Different Words) for selected speaker
   const calculateNDW = () => {
-    // Try to get NDW from speechAnalysis first
-    if (speechAnalysis?.ndw) {
-      return speechAnalysis.ndw;
-    }
-    
-    // Fallback: calculate from transcript data
-    if (!transcriptData) return 0;
+    // Fallback: calculate from speaker transcript data
+    if (!speakerTranscriptData) return 0;
     
     const uniqueWords = new Set<string>();
     
@@ -85,7 +132,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
              /^[.,!?;:]+$/.test(word);
     };
     
-    transcriptData.forEach(segment => {
+    speakerTranscriptData.forEach(segment => {
       segment.words.forEach(word => {
         if (!isFillerOrPunctuation(word.word)) {
           const cleanWord = word.word.toLowerCase().replace(/[.,!?;:]/g, '');
@@ -101,11 +148,112 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
 
   const ndw = calculateNDW();
   
-  // Calculate speech rate (assuming average words per minute)
-  const calculateSpeechRate = () => {
-    if (!transcriptData || duration === 0) return 0;
+  // Calculate MLUw (Mean Length of Utterance in Words) for selected speaker
+  const calculateMLUw = () => {
+    if (!speakerTranscriptData || speakerTranscriptData.length === 0) return 0;
     
-    const wordsPerMinute = Math.round((totalWords / duration) * 60);
+    // Filter to valid segments with meaningful words
+    const validSegments = speakerTranscriptData.filter(segment => 
+      segment.words.some(word => {
+        const cleanWord = word.word.toLowerCase().replace(/[.,!?;:]/g, '');
+        return cleanWord && 
+               cleanWord !== 'um' && 
+               cleanWord !== 'uh' && 
+               !word.word.includes('[') && 
+               !word.word.includes(']');
+      })
+    );
+    
+    if (validSegments.length === 0) return 0;
+    
+    // Count valid words per segment and calculate average
+    let totalValidWords = 0;
+    validSegments.forEach(segment => {
+      const validWords = segment.words.filter(word => {
+        const cleanWord = word.word.toLowerCase().replace(/[.,!?;:]/g, '');
+        return cleanWord && 
+               cleanWord !== 'um' && 
+               cleanWord !== 'uh' && 
+               !word.word.includes('[') && 
+               !word.word.includes(']');
+      });
+      totalValidWords += validWords.length;
+    });
+    
+    return totalValidWords / validSegments.length;
+  };
+
+  // Calculate MLUm (Mean Length of Utterance in Morphemes) for selected speaker  
+  const calculateMLUm = () => {
+    if (!speakerTranscriptData || speakerTranscriptData.length === 0) return 0;
+    
+    // Filter to valid segments with meaningful words
+    const validSegments = speakerTranscriptData.filter(segment => 
+      segment.words.some(word => {
+        const cleanWord = word.word.toLowerCase().replace(/[.,!?;:]/g, '');
+        return cleanWord && 
+               cleanWord !== 'um' && 
+               cleanWord !== 'uh' && 
+               !word.word.includes('[') && 
+               !word.word.includes(']');
+      })
+    );
+    
+    if (validSegments.length === 0) return 0;
+    
+    let totalMorphemes = 0;
+    
+    validSegments.forEach(segment => {
+      let segmentMorphemes = 0;
+      
+      // Count morphemes for each valid word in the segment
+      const validWords = segment.words.filter(word => {
+        const cleanWord = word.word.toLowerCase().replace(/[.,!?;:]/g, '');
+        return cleanWord && 
+               cleanWord !== 'um' && 
+               cleanWord !== 'uh' && 
+               !word.word.includes('[') && 
+               !word.word.includes(']');
+      });
+      
+      validWords.forEach((validWord) => {
+        // Check if this word has a morpheme annotation with non-IRR morpheme_form
+        const morpheme = segment.morphemes?.find((m: any) => {
+          const cleanWord = validWord.word.replace(/[.,!?;:]$/, '');
+          const cleanMorphemeWord = m.word.replace(/[.,!?;:]$/, '');
+          return cleanWord === cleanMorphemeWord;
+        });
+        
+        if (morpheme && morpheme.morpheme_form && morpheme.morpheme_form !== '<IRR>') {
+          // Word with morpheme annotation (non-IRR) = 2 morphemes (lemma + morpheme_form)
+          segmentMorphemes += 2;
+        } else {
+          // Regular word or IRR morpheme = 1 morpheme
+          segmentMorphemes += 1;
+        }
+      });
+      
+      totalMorphemes += segmentMorphemes;
+    });
+    
+    return totalMorphemes / validSegments.length;
+  };
+
+  const mluw = calculateMLUw();
+  const mlum = calculateMLUm();
+  
+  // Calculate speech rate for selected speaker
+  const calculateSpeechRate = () => {
+    if (!speakerTranscriptData || speakerTranscriptData.length === 0) return 0;
+    
+    // Calculate duration for selected speaker
+    const speakerDuration = speakerTranscriptData.reduce((total, segment) => {
+      return total + (segment.end - segment.start);
+    }, 0);
+    
+    if (speakerDuration === 0) return 0;
+    
+    const wordsPerMinute = Math.round((totalWords / speakerDuration) * 60);
     return wordsPerMinute;
   };
 
@@ -142,13 +290,13 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
 
   const speechQuality = getSpeechRateQuality(speechRate);
 
-  // Get top issues
+  // Get top issues for selected speaker
   const getTopIssues = () => {
     const issues = [
-      { name: 'Pauses', count: issueCounts.pause, color: getBackgroundColor('pause'), type: 'pause', icon: Clock },
-      { name: 'Filler Words', count: issueCounts.filler, color: getBackgroundColor('filler'), type: 'filler', icon: MessageSquare },
-      { name: 'Repetition', count: issueCounts.repetition, color: getBackgroundColor('repetition'), type: 'repetition', icon: Target },
-      { name: 'Morphemes', count: issueCounts['morpheme-omission'] + (issueCounts.morpheme || 0), color: getBackgroundColor('morpheme-omission'), type: 'morpheme-omission', icon: Activity },
+      { name: 'Pauses', count: speakerIssueCounts.pause, color: getBackgroundColor('pause'), type: 'pause', icon: Clock },
+      { name: 'Filler Words', count: speakerIssueCounts.filler, color: getBackgroundColor('filler'), type: 'filler', icon: MessageSquare },
+      { name: 'Repetition', count: speakerIssueCounts.repetition, color: getBackgroundColor('repetition'), type: 'repetition', icon: Target },
+      { name: 'Morphemes', count: speakerIssueCounts['morpheme-omission'] + (speakerIssueCounts.morpheme || 0), color: getBackgroundColor('morpheme-omission'), type: 'morpheme-omission', icon: Activity },
     ];
     
     return issues
@@ -185,6 +333,30 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Speaker Selection */}
+      {allSpeakers.length > 1 && (
+        <div className="p-4 border-b border-gray-200 bg-white">
+          <div className="mb-2">
+            <label className="text-xs font-medium text-gray-700 mb-1 block">Speaker Analysis</label>
+            <select
+              value={currentSpeaker}
+              onChange={(e) => onSpeakerChange?.(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {allSpeakers.map(speaker => (
+                <option key={speaker} value={speaker}>
+                  {speaker} ({speakerUtteranceCounts[speaker]} utterances)
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="text-xs text-gray-500">
+            Analyzing data for {currentSpeaker}
+            {currentSpeaker === defaultSpeaker && ' (default)'}
+          </div>
+        </div>
+      )}
 
       {/* Simple Tabs */}
       <div className="bg-white border-b border-gray-200">
@@ -256,10 +428,10 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                   <span className="text-xs font-medium text-purple-700">Pause/Word Ratio</span>
                 </div>
                 <div className="text-2xl font-bold text-purple-800">
-                  {totalWords > 0 ? ((speechAnalysis?.numberOfPauses || 0) / totalWords).toFixed(3) : '0.000'}
+                  {totalWords > 0 ? (speakerIssueCounts.pause / totalWords).toFixed(3) : '0.000'}
                 </div>
                 <div className="text-xs text-purple-600">
-                  {speechAnalysis?.numberOfPauses || 0} pauses / {totalWords} words
+                  {speakerIssueCounts.pause} pauses / {totalWords} words
                 </div>
               </div>
               
@@ -360,7 +532,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           </div>
         )}
 
-        {activeTab === 'language' && speechAnalysis && (
+        {activeTab === 'language' && (
           <div className="p-4 space-y-6">
             <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
               <h3 className="text-sm font-semibold text-gray-800 mb-4">Core Language Metrics</h3>
@@ -369,29 +541,29 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
                   <div className="text-xs font-medium text-blue-700 mb-1">NTW</div>
-                  <div className="text-xl font-bold text-blue-800">{speechAnalysis.ntw || 0}</div>
+                  <div className="text-xl font-bold text-blue-800">{totalWords}</div>
                   <div className="text-xs text-blue-600">Total Words</div>
                 </div>
                 <div className="p-3 bg-green-50 rounded-lg border border-green-100">
                   <div className="text-xs font-medium text-green-700 mb-1">NDW</div>
-                  <div className="text-xl font-bold text-green-800">{speechAnalysis.ndw || 0}</div>
+                  <div className="text-xl font-bold text-green-800">{ndw}</div>
                   <div className="text-xs text-green-600">Different Words</div>
                 </div>
                 <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
                   <div className="text-xs font-medium text-purple-700 mb-1">MLUw</div>
-                  <div className="text-xl font-bold text-purple-800">{(speechAnalysis.mluw || 0).toFixed(2)}</div>
+                  <div className="text-xl font-bold text-purple-800">{mluw.toFixed(2)}</div>
                   <div className="text-xs text-purple-600">Mean Length (Words)</div>
                 </div>
                 <div className="p-3 bg-orange-50 rounded-lg border border-orange-100">
                   <div className="text-xs font-medium text-orange-700 mb-1">MLUm</div>
-                  <div className="text-xl font-bold text-orange-800">{(speechAnalysis.mlum || 0).toFixed(2)}</div>
+                  <div className="text-xl font-bold text-orange-800">{mlum.toFixed(2)}</div>
                   <div className="text-xs text-orange-600">Mean Length (Morphemes)</div>
                 </div>
               </div>
 
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="text-xs font-medium text-gray-700 mb-1">Pauses</div>
-                <div className="text-xl font-bold text-gray-800">{speechAnalysis.numberOfPauses || 0}</div>
+                <div className="text-xl font-bold text-gray-800">{speakerIssueCounts.pause}</div>
                 <div className="text-xs text-gray-600">Total pauses in speech</div>
               </div>
             </div>
@@ -404,14 +576,14 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600">NDW/NTW Ratio</span>
                     <span className="text-lg font-bold text-gray-800">
-                      {(speechAnalysis.ntw || 0) > 0 ? ((speechAnalysis.ndw || 0) / (speechAnalysis.ntw || 1)).toFixed(3) : '0.000'}
+                      {totalWords > 0 ? (ndw / totalWords).toFixed(3) : '0.000'}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div 
                       className="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full transition-all duration-300"
                       style={{ 
-                        width: `${Math.min(((speechAnalysis.ndw || 0) / (speechAnalysis.ntw || 1)) * 100, 100)}%` 
+                        width: `${Math.min((ndw / Math.max(totalWords, 1)) * 100, 100)}%` 
                       }}
                     />
                   </div>
@@ -422,7 +594,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                   </div>
                   <div className="text-xs text-gray-500 mt-2">
                     {(() => {
-                      const ratio = (speechAnalysis.ndw || 0) / (speechAnalysis.ntw || 1);
+                      const ratio = ndw / Math.max(totalWords, 1);
                       if (ratio >= 0.5) return "🟢 Excellent vocabulary variety";
                       if (ratio >= 0.35) return "🟡 Good vocabulary variety";
                       if (ratio >= 0.25) return "🟠 Moderate vocabulary variety";
@@ -436,12 +608,12 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                   <div className="grid grid-cols-2 gap-3">
                     <div className="text-center p-2 bg-blue-50 rounded-lg">
                       <div className="text-xs text-blue-600 mb-1">Unique Words</div>
-                      <div className="text-lg font-bold text-blue-800">{speechAnalysis.ndw || 0}</div>
+                      <div className="text-lg font-bold text-blue-800">{ndw}</div>
                     </div>
                     <div className="text-center p-2 bg-blue-50 rounded-lg">
                       <div className="text-xs text-blue-600 mb-1">Word Repetition</div>
                       <div className="text-lg font-bold text-blue-800">
-                        {(speechAnalysis.ntw || 0) > 0 ? (((speechAnalysis.ntw || 0) - (speechAnalysis.ndw || 0)) / (speechAnalysis.ntw || 1) * 100).toFixed(1) : '0.0'}%
+                        {totalWords > 0 ? (((totalWords - ndw) / totalWords) * 100).toFixed(1) : '0.0'}%
                       </div>
                     </div>
                   </div>
@@ -457,14 +629,14 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600">MLUm/MLUw Ratio</span>
                     <span className="text-lg font-bold text-gray-800">
-                      {(speechAnalysis.mluw || 0) > 0 ? ((speechAnalysis.mlum || 0) / (speechAnalysis.mluw || 1)).toFixed(3) : '0.000'}
+                      {mluw > 0 ? (mlum / mluw).toFixed(3) : '0.000'}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div 
                       className="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-300"
                       style={{ 
-                        width: `${Math.min(Math.max((((speechAnalysis.mlum || 0) / (speechAnalysis.mluw || 1)) - 1) * 100, 0), 100)}%` 
+                        width: `${Math.min(Math.max(((mlum / Math.max(mluw, 1)) - 1) * 100, 0), 100)}%` 
                       }}
                     />
                   </div>
@@ -475,7 +647,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                   </div>
                   <div className="text-xs text-gray-500 mt-2">
                     {(() => {
-                      const ratio = (speechAnalysis.mlum || 0) / (speechAnalysis.mluw || 1);
+                      const ratio = mlum / Math.max(mluw, 1);
                       if (ratio >= 1.4) return "🟢 High morphological complexity";
                       if (ratio >= 1.2) return "🟡 Moderate morphological complexity";
                       if (ratio >= 1.1) return "🟠 Low morphological complexity";
@@ -490,16 +662,41 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                     <div className="text-center p-2 bg-green-50 rounded-lg">
                       <div className="text-xs text-green-600 mb-1">Avg Morphemes/Word</div>
                       <div className="text-lg font-bold text-green-800">
-                        {(speechAnalysis.mluw || 0) > 0 ? ((speechAnalysis.mlum || 0) / (speechAnalysis.mluw || 1)).toFixed(2) : '0.00'}
+                        {mluw > 0 ? (mlum / mluw).toFixed(2) : '0.00'}
                       </div>
                     </div>
                     <div className="text-center p-2 bg-green-50 rounded-lg">
                       <div className="text-xs text-green-600 mb-1">Total Morphemes</div>
                       <div className="text-lg font-bold text-green-800">
-                        {Math.round((speechAnalysis.mlum || 0) * ((speechAnalysis.ntw || 0) / (speechAnalysis.mluw || 1)))}
+                        {Math.round(mlum * speakerUtteranceCounts[currentSpeaker])}
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Speaker Summary */}
+            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+              <h4 className="text-sm font-semibold text-gray-800 mb-4">Speaker Summary</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Speaking Time</span>
+                  <span className="text-lg font-bold text-gray-800">
+                    {speakerTranscriptData.reduce((total, segment) => total + (segment.end - segment.start), 0).toFixed(1)}s
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Error Rate</span>
+                  <span className="text-lg font-bold text-gray-800">
+                    {totalWords > 0 ? ((totalIssues / totalWords) * 100).toFixed(1) : '0.0'}%
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Average Words per Utterance</span>
+                  <span className="text-lg font-bold text-gray-800">
+                    {speakerUtteranceCounts[currentSpeaker] > 0 ? (totalWords / speakerUtteranceCounts[currentSpeaker]).toFixed(1) : '0.0'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -511,7 +708,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
             <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
               <h3 className="text-sm font-semibold text-gray-800 mb-4">All Issues Detected</h3>
               <div className="space-y-3">
-                {Object.entries(issueCounts)
+                {Object.entries(speakerIssueCounts)
                   .filter(([, count]) => count > 0)
                   .sort(([, a], [, b]) => b - a)
                   .map(([type, count]) => {
@@ -559,7 +756,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                       return countB - countA; // Decreasing order
                     })
                     .map((filter) => {
-                      const count = issueCounts[filter as keyof IssueCounts] || 0;
+                      const count = speakerIssueCounts[filter as keyof IssueCounts] || 0;
                       const percentage = totalWords > 0 ? ((count / totalWords) * 100) : 0;
                       
                       return (
