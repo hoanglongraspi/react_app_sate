@@ -34,7 +34,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   // onToggle, // Currently unused but kept for future functionality
   activeTab, 
   onTabChange, 
-  issueCounts,  
+  issueCounts, 
   transcriptData, 
   activeFilters,
   selectedSpeaker,
@@ -559,10 +559,14 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                 </div>
               </div>
 
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="text-xs font-medium text-gray-700 mb-1">Pauses</div>
-                <div className="text-xl font-bold text-gray-800">{speakerIssueCounts.pause}</div>
-                <div className="text-xs text-gray-600">Total pauses in speech</div>
+              <div className="p-3 bg-red-50 rounded-lg border border-red-100">
+                <div className="text-xs font-medium text-red-700 mb-1">Pause/Word Ratio</div>
+                <div className="text-xl font-bold text-red-800">
+                  {totalWords > 0 ? (speakerIssueCounts.pause / totalWords).toFixed(3) : '0.000'}
+                </div>
+                <div className="text-xs text-red-600">
+                  {speakerIssueCounts.pause} pauses / {totalWords} words
+                </div>
               </div>
             </div>
 
